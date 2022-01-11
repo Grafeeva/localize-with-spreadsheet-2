@@ -35,32 +35,53 @@ const FakeWriter = function() {
 }
 
 FileWriter.prototype.getTransformedLines = function(lines, transformer) {
-  let valueToInsert = ''
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
+  // let valueToInsert = ''
+  // for (let i = 0; i < lines.length; i++) {
+  //   const line = lines[i]
 
-    if (!line.isEmpty()) {
-      if (line.isComment()) {
-        const transformed = transformer.transformComment(line.getComment())
+  //   if (!line.isEmpty()) {
+  //     if (line.isComment()) {
+  //       const transformed = transformer.transformComment(line.getComment())
 
-        if (transformed !== null) {
-          valueToInsert += transformed
+  //       if (transformed !== null) {
+  //         valueToInsert += transformed
 
-          if (i !== lines.length - 1) {
-            valueToInsert += EOL
-          }
+  //         if (i !== lines.length - 1) {
+  //           valueToInsert += EOL
+  //         }
+  //       }
+  //     } else {
+  //       valueToInsert += transformer.transformKeyValue(line.getKey(), line.getValue())
+
+  //       if (i !== lines.length - 1) {
+  //         valueToInsert += EOL
+  //       }
+  //     }
+  //   }
+  // }
+
+  // return valueToInsert
+    var valueToInsert = transformer.empty();
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        var skipLine = false;
+        if (line.hasData()) {
+            var newValue = null
+            if (line.isComment()) {
+                newValue = transformer.transformComment(line.getComment());
+            } else {
+                newValue = transformer.transformKeyValue(line.getKey(), line.getValue());
+            }
+            valueToInsert = appendValueTo(valueToInsert, newValue);
+            skipLine = newValue == null
         }
-      } else {
-        valueToInsert += transformer.transformKeyValue(line.getKey(), line.getValue())
 
-        if (i !== lines.length - 1) {
-          valueToInsert += EOL
+        if (!skipLine && (line.hasData() || line.isEmpty())) {
+            valueToInsert = appendValueTo(valueToInsert, EOL);
         }
-      }
     }
-  }
 
-  return valueToInsert
+  return valueToInsert;
 }
 
 FakeWriter.prototype.write = function(filePath, lines, transformer) {
@@ -68,3 +89,17 @@ FakeWriter.prototype.write = function(filePath, lines, transformer) {
 }
 
 module.exports = { File: FileWriter, Fake: FakeWriter }
+
+
+function appendValueTo(container, value) {
+    if (value == null) {
+        /* Do nothing. */
+    } else if (typeof container == 'string') {
+        container += value
+    } else if (typeof container == 'object') {
+        container.push(value)
+    }
+    return container
+}
+
+

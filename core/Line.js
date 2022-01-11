@@ -41,6 +41,10 @@ Line.normalizeComment = function (val) {
     return val;
 };
 
+Line.prototype.hasData = function () {
+    return this._isComment || this._key;
+};
+
 Line.prototype.isEmpty = function () {
     return !this._isComment && !this._key;
 };
